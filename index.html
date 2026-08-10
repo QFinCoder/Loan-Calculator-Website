@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loan Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+HK:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --o-700:#B84D04; --o-600:#E2620A; --o-500:#FF8A3D; --o-200:#FFD5B0; --o-100:#FFF0E2; --o-050:#FFF8F1;
+  --ink:#17150F; --ink-2:#4C4638; --ink-3:#8B8272; --line:#E7E1D6; --line-2:#F0ECE4;
+  --surface:#FFFFFF; --canvas:#F7F5F1; --raise:0 1px 2px rgba(23,21,15,.06),0 8px 24px rgba(23,21,15,.05);
+  --pos:#0E7C66; --pos-bg:#E4F3EF; --neg:#C0392B; --neg-bg:#FBE9E7; --warn:#A97400; --warn-bg:#FDF3DC;
+  --r:10px; --r-s:6px;
+  --f-display:'Archivo','Noto Sans HK',system-ui,sans-serif;
+  --f-body:'Inter','Noto Sans HK',system-ui,-apple-system,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,'SF Mono',monospace;
+}
+[data-theme="dark"]{
+  --o-700:#FFA76B; --o-600:#FF8534; --o-500:#FF9E5C; --o-200:#5C3312; --o-100:#2A1B0F; --o-050:#221710;
+  --ink:#F5F1EA; --ink-2:#C3BBAB; --ink-3:#8A8272; --line:#332F28; --line-2:#262320;
+  --surface:#1C1A16; --canvas:#131210; --raise:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35);
+  --pos:#4FD1B0; --pos-bg:#123029; --neg:#FF8378; --neg-bg:#361D1A; --warn:#E5B54B; --warn-bg:#332A14;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--canvas);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+html[lang="zh"] body{font-family:'Noto Sans HK','Inter',system-ui,sans-serif}
+html[lang="zh"] h1,html[lang="zh"] h2,html[lang="zh"] h3{font-family:'Noto Sans HK','Archivo',sans-serif}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;letter-spacing:-.02em}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+.topbar{position:sticky;top:0;z-index:60;background:var(--surface);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:16px;padding:10px 20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand .mark{width:26px;height:26px;border-radius:7px;flex:none;background:linear-gradient(145deg,var(--o-500),var(--o-700));
+  box-shadow:inset 0 -6px 10px rgba(0,0,0,.18);position:relative}
+.brand .mark::after{content:"";position:absolute;inset:8px 8px auto 8px;height:2px;background:rgba(255,255,255,.85);border-radius:2px;box-shadow:0 5px 0 rgba(255,255,255,.55)}
+.brand b{font-family:var(--f-display);font-weight:800;font-size:15px;letter-spacing:-.03em}
+.brand span{font-size:11px;color:var(--ink-3);letter-spacing:.06em;font-family:var(--f-mono)}
+.gc{display:flex;align-items:center;gap:8px}
+.gc label{font-size:10.5px;letter-spacing:.06em;color:var(--ink-3);font-family:var(--f-mono);white-space:nowrap}
+.langsw{display:flex;border:1px solid var(--line);border-radius:var(--r-s);overflow:hidden}
+.langsw button{border:0;background:transparent;padding:6px 11px;cursor:pointer;font-size:12.5px;font-weight:500}
+.langsw button[aria-pressed="true"]{background:var(--o-600);color:#fff}
+input[type=text],input[type=number],input[type=date],select,textarea{background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-s);padding:7px 9px;outline:none;transition:border-color .15s,box-shadow .15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--o-600);box-shadow:0 0 0 3px var(--o-100)}
+input[type=number],input[type=date]{font-family:var(--f-mono);font-size:13px}
+input[readonly]{background:var(--o-050);color:var(--o-700);font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:6px;justify-content:center;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-s);padding:7px 12px;cursor:pointer;font-weight:500;white-space:nowrap;transition:background .15s,border-color .15s,transform .06s}
+.btn:hover{border-color:var(--o-500);background:var(--o-100)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--o-600);border-color:var(--o-600);color:#fff}
+.btn.primary:hover{background:var(--o-700);border-color:var(--o-700)}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.danger:hover{border-color:var(--neg);background:var(--neg-bg);color:var(--neg)}
+.btn.sm{padding:4px 9px;font-size:12px}
+:focus-visible{outline:2px solid var(--o-600);outline-offset:2px}
+.tabs{display:flex;gap:2px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:53px;z-index:55;overflow-x:auto}
+.tab{border:0;background:transparent;cursor:pointer;padding:11px 14px 10px;font-family:var(--f-display);font-weight:600;
+  font-size:13.5px;color:var(--ink-3);border-bottom:2px solid transparent;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--o-700);border-bottom-color:var(--o-600)}
+.tab .n{font-family:var(--f-mono);font-size:10px;opacity:.6;margin-right:6px}
+main{padding:20px;max-width:1620px;margin:0 auto}
+.view{display:none}
+.view.active{display:block;animation:fade .22s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--raise);margin-bottom:16px}
+.card-h{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+.card-h h3{font-size:14px;font-weight:700}
+.card-h .sub{font-size:12px;color:var(--ink-3)}
+.card-h .sp{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card-b{padding:16px}
+.eyebrow{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}
+.field label{display:block;font-size:11px;color:var(--ink-2);margin-bottom:4px;font-weight:500}
+.field .hint{font-size:11px;color:var(--ink-3);margin-top:3px;font-family:var(--f-mono)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;box-shadow:var(--raise);position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--line)}
+.kpi.k-o::before{background:var(--o-600)}.kpi.k-p::before{background:var(--pos)}
+.kpi.k-n::before{background:var(--neg)}.kpi.k-w::before{background:var(--warn)}
+.kpi .lab{font-size:10.5px;letter-spacing:.05em;color:var(--ink-3);font-family:var(--f-mono);display:flex;align-items:center;gap:5px}
+.kpi .val{font-family:var(--f-display);font-weight:700;font-size:23px;letter-spacing:-.03em;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:11.5px;color:var(--ink-3);margin-top:3px;font-family:var(--f-mono)}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.rail-wrap{padding:6px 2px 2px}
+.rail{display:flex;height:38px;width:100%;border-radius:8px;overflow:hidden;background:var(--line-2);border:1px solid var(--line)}
+.rail .seg{position:relative;min-width:2px;cursor:pointer;transition:filter .15s,transform .15s;
+  background:linear-gradient(180deg,var(--o-500),var(--o-600));border-right:1px solid rgba(255,255,255,.55)}
+.rail .seg:hover{filter:brightness(1.12);transform:scaleY(1.06);z-index:2}
+.rail .seg.repaid{background:repeating-linear-gradient(135deg,var(--o-600),var(--o-600) 4px,var(--o-700) 4px,var(--o-700) 8px)}
+.rail .free{flex:1;background:repeating-linear-gradient(135deg,transparent,transparent 6px,var(--line) 6px,var(--line) 7px)}
+.rail-legend{display:flex;gap:16px;margin-top:9px;font-size:11.5px;color:var(--ink-3);flex-wrap:wrap;font-family:var(--f-mono)}
+.rail-legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:5px}
+.subtabs{display:flex;gap:6px;padding:11px 16px;border-bottom:1px solid var(--line-2);flex-wrap:wrap;background:var(--o-050)}
+.subtab{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:5px 14px;cursor:pointer;font-size:12.5px;font-weight:500}
+.subtab:hover{border-color:var(--o-500)}
+.subtab[aria-selected="true"]{background:var(--o-600);border-color:var(--o-600);color:#fff}
+.tbl-scroll{overflow:auto;max-height:72vh;border-top:1px solid var(--line-2)}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+th{position:sticky;top:0;z-index:3;background:var(--surface);text-align:right;font-family:var(--f-mono);font-size:10.5px;
+  letter-spacing:.03em;color:var(--ink-3);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap;font-weight:500}
+th.grp{text-align:center;background:var(--o-100);color:var(--o-700);font-weight:700;font-size:11px;letter-spacing:.08em;
+  border-bottom:1px solid var(--o-200);top:0}
+thead tr.r2 th{top:29px}
+th.l,td.l{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid var(--line-2);text-align:right;white-space:nowrap;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+td.l{font-family:var(--f-body)}
+td.reb,th.reb{background:var(--o-050)}
+tbody tr:hover td{background:var(--o-100)}
+td.sep,th.sep{border-left:2px solid var(--line)}
+tfoot td{position:sticky;bottom:0;background:var(--surface);border-top:2px solid var(--o-600);font-weight:600;box-shadow:0 -1px 0 var(--line)}
+.tbl-mini td,.tbl-mini th{padding:5px 8px}
+.num-neg{color:var(--neg)}.num-pos{color:var(--pos)}
+.chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10.5px;font-family:var(--f-mono);background:var(--line-2);color:var(--ink-2)}
+.chip.o{background:var(--o-100);color:var(--o-700)}.chip.p{background:var(--pos-bg);color:var(--pos)}
+.chip.w{background:var(--warn-bg);color:var(--warn)}.chip.n{background:var(--neg-bg);color:var(--neg)}
+.setup{display:grid;grid-template-columns:258px 1fr;gap:16px;align-items:start}
+.loanlist{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--raise);overflow:hidden;position:sticky;top:106px}
+.loanlist .item{padding:11px 13px;border-bottom:1px solid var(--line-2);cursor:pointer;display:block;width:100%;text-align:left;background:none;border-left:3px solid transparent}
+.loanlist .item:hover{background:var(--o-100)}
+.loanlist .item.sel{background:var(--o-100);border-left-color:var(--o-600)}
+.loanlist .item .nm{font-weight:600;font-size:13px}
+.loanlist .item .mt{font-size:11px;color:var(--ink-3);font-family:var(--f-mono);margin-top:3px}
+.bar-mini{height:4px;background:var(--line-2);border-radius:3px;margin-top:7px;overflow:hidden}
+.bar-mini i{display:block;height:100%;background:var(--o-600)}
+.flag{display:flex;gap:9px;padding:9px 12px;border-radius:var(--r-s);margin-bottom:8px;font-size:12.5px;align-items:flex-start}
+.flag.err{background:var(--neg-bg);color:var(--neg)}
+.flag.warn{background:var(--warn-bg);color:var(--warn)}
+.flag.ok{background:var(--pos-bg);color:var(--pos)}
+.flag .ic{font-family:var(--f-mono);font-weight:700}
+#tip{position:fixed;z-index:999;max-width:340px;background:var(--ink);color:var(--canvas);border-radius:8px;padding:9px 11px;
+  font-size:12px;line-height:1.45;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+#tip.on{opacity:1;transform:none}
+#tip .t{font-family:var(--f-display);font-weight:700;font-size:12px;margin-bottom:4px;color:var(--o-500)}
+#tip .f{font-family:var(--f-mono);font-size:11px;color:#F0D9C4;background:rgba(255,255,255,.08);padding:5px 6px;border-radius:4px;margin-top:5px;white-space:pre-wrap}
+[data-tip]{cursor:help}
+.info{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;border:1px solid var(--ink-3);
+  color:var(--ink-3);font-size:9px;font-family:var(--f-mono);cursor:help;flex:none}
+.info:hover{border-color:var(--o-600);color:var(--o-600)}
+.chart{width:100%;overflow:visible;display:block}
+.chart text{font-family:var(--f-mono);font-size:10px;fill:var(--ink-3)}
+.chart .axis{stroke:var(--line);stroke-width:1}
+.chart .grid-l{stroke:var(--line-2);stroke-width:1}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);font-family:var(--f-mono);padding:0 16px 14px}
+.chart-legend i{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:5px}
+.ins{display:flex;gap:11px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;background:var(--surface)}
+.ins p{margin:0;font-size:13px}
+.ins p b{font-family:var(--f-mono);font-weight:600}
+.slider-row{display:grid;grid-template-columns:158px 1fr 92px;align-items:center;gap:12px;margin-bottom:11px}
+.slider-row label{font-size:12.5px}
+.slider-row output{font-family:var(--f-mono);font-size:13px;text-align:right;font-weight:600;color:var(--o-700)}
+input[type=range]{width:100%;accent-color:var(--o-600)}
+.empty{text-align:center;padding:44px 20px;color:var(--ink-3)}
+.empty h3{font-size:16px;color:var(--ink);margin-bottom:6px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--canvas);
+  padding:11px 18px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;z-index:900;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.modal-bg{position:fixed;inset:0;background:rgba(23,21,15,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.modal{background:var(--surface);border-radius:var(--r);max-width:640px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:88vh;overflow:auto}
+.dd-row{display:grid;grid-template-columns:1.1fr 1.3fr 1.1fr 34px;gap:8px;margin-bottom:7px;align-items:center}
+.dd-head{font-family:var(--f-mono);font-size:10px;letter-spacing:.05em;color:var(--ink-3)}
+.schedule-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.step{border:1px solid var(--line);border-radius:var(--r-s);padding:8px 12px;background:var(--o-050);min-width:112px}
+.step .k{font-family:var(--f-mono);font-size:10px;color:var(--ink-3)}
+.step .v{font-family:var(--f-mono);font-weight:600;font-size:13px;color:var(--o-700)}
+.step .p{font-size:11px;color:var(--ink-2)}
+@media (max-width:1080px){.setup{grid-template-columns:1fr}.loanlist{position:static}.g4,.g5,.g3{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:680px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}.dd-row{grid-template-columns:1fr 1fr}main{padding:12px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{.topbar,.tabs,.no-print{display:none}.view{display:block!important}body{background:#fff}.tbl-scroll{max-height:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="mark"></div>
+    <div><b data-i18n="appName">Loan Calculator</b><br><span data-i18n="appSub">Drawdowns · repayments · subsidies</span></div>
+  </div>
+  <div class="gc">
+    <label for="gReportDate" data-i18n="reportDate">Reporting date</label>
+    <input type="date" id="gReportDate" style="width:150px">
+  </div>
+  <div class="gc no-print">
+    <button class="btn sm" id="btnSave" data-i18n="save">Save</button>
+    <button class="btn sm" id="btnLoad" data-i18n="open">Open</button>
+    <button class="btn sm" id="btnTheme" aria-label="theme">◐</button>
+    <input type="file" id="fileIn" accept=".json" hidden>
+    <div class="langsw">
+      <button data-lang="en" aria-pressed="true">EN</button>
+      <button data-lang="zh" aria-pressed="false">繁中</button>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab" role="tab" data-view="setup" aria-selected="true"><span class="n">01</span><span data-i18n="tabSetup">Loan setup</span></button>
+  <button class="tab" role="tab" data-view="sheet" aria-selected="false"><span class="n">02</span><span data-i18n="tabSheet">Repayment statement</span></button>
+  <button class="tab" role="tab" data-view="interest" aria-selected="false"><span class="n">03</span><span data-i18n="tabInterest">Interest &amp; rebate</span></button>
+  <button class="tab" role="tab" data-view="dash" aria-selected="false"><span class="n">04</span><span data-i18n="tabDash">Dashboard</span></button>
+  <button class="tab" role="tab" data-view="insight" aria-selected="false"><span class="n">05</span><span data-i18n="tabInsight">Insights</span></button>
+</nav>
+
+<main>
+  <section class="view active" id="view-setup">
+    <div class="setup">
+      <aside>
+        <div class="loanlist">
+          <div class="card-h" style="border-bottom:1px solid var(--line)">
+            <h3 data-i18n="loans">Loans</h3>
+            <div class="sp"><button class="btn sm primary" id="btnAddLoan" data-i18n="add">+ Add</button></div>
+          </div>
+          <div id="loanList"></div>
+          <div style="padding:11px 13px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn sm" id="btnSample" data-i18n="loadSample">Load sample</button>
+            <button class="btn sm danger" id="btnClearAll" data-i18n="clearAll">Clear all</button>
+          </div>
+        </div>
+      </aside>
+      <div id="loanEditor"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-sheet">
+    <div class="card">
+      <div class="card-h">
+        <h3 data-i18n="tabSheet">Repayment statement</h3>
+        <span class="sub" data-i18n="sheetSub">One sheet per loan — principal repaid, principal outstanding and the subsidy earned on each instalment</span>
+        <div class="sp no-print"><button class="btn sm" id="btnCsvSheet" data-i18n="exportCsv">Export CSV</button>
+          <button class="btn sm" id="btnPrint" data-i18n="print">Print / PDF</button></div>
+      </div>
+      <div class="subtabs" id="sheetTabs"></div>
+      <div id="sheetHead"></div>
+      <div class="tbl-scroll" id="sheetWrap"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-interest">
+    <div class="card">
+      <div class="card-h">
+        <h3 data-i18n="tabInterest">Interest &amp; rebate</h3>
+        <span class="sub" data-i18n="intSub">Accrued from each drawdown date to the reporting date</span>
+        <div class="sp no-print"><button class="btn sm" id="btnCsvInt" data-i18n="exportCsv">Export CSV</button></div>
+      </div>
+      <div class="subtabs" id="intTabs"></div>
+      <div id="intHead"></div>
+      <div class="tbl-scroll" id="intWrap"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-dash">
+    <div class="card-h" style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:16px;box-shadow:var(--raise)">
+      <h3 data-i18n="scope">Scope</h3>
+      <div class="sp"><select id="gScope" style="width:260px"></select>
+        <select id="gCcy" style="width:90px"><option>CNY</option><option>HKD</option><option>USD</option></select></div>
+    </div>
+    <div class="kpis" id="dashKpis"></div>
+    <div class="card">
+      <div class="card-h"><h3 data-i18n="railTitle">Facility rail</h3><span class="sub" data-i18n="railSub">Every drawdown to scale, oldest first</span>
+        <div class="sp"><span class="eyebrow" id="railNote"></span></div></div>
+      <div class="card-b">
+        <div class="rail-wrap"><div class="rail" id="rail"></div></div>
+        <div class="rail-legend">
+          <span><i style="background:linear-gradient(180deg,var(--o-500),var(--o-600))"></i><span data-i18n="legendOut">Outstanding</span></span>
+          <span><i style="background:repeating-linear-gradient(135deg,var(--o-600),var(--o-600) 3px,var(--o-700) 3px,var(--o-700) 6px)"></i><span data-i18n="legendRepaid">Repaid</span></span>
+          <span><i style="background:var(--line)"></i><span data-i18n="legendFree">Unutilised</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="grid g2" style="align-items:start">
+      <div class="card">
+        <div class="card-h"><h3 data-i18n="chartCumT">Drawn vs repaid</h3><span class="sub" data-i18n="chartCumS">Cumulative</span></div>
+        <div class="card-b" style="padding-bottom:4px"><div id="chartCum"></div></div>
+        <div class="chart-legend">
+          <span><i style="background:var(--o-600)"></i><span data-i18n="legendDrawn">Cumulative drawn</span></span>
+          <span><i style="background:var(--pos)"></i><span data-i18n="legendRepaid">Repaid</span></span>
+          <span><i style="background:var(--o-200)"></i><span data-i18n="legendOut">Outstanding</span></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3 data-i18n="chartFutT">Future principal due</h3><span class="sub" data-i18n="chartFutS">After the reporting date</span></div>
+        <div class="card-b"><div id="chartFuture"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h"><h3 data-i18n="loanTableT">Loan summary</h3></div>
+      <div class="tbl-scroll" id="loanTable" style="max-height:none"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-insight">
+    <div class="grid g2" style="align-items:start">
+      <div>
+        <div class="card">
+          <div class="card-h"><h3 data-i18n="checkT">Data check</h3></div>
+          <div class="card-b" id="validation"></div>
+        </div>
+        <div class="card">
+          <div class="card-h"><h3 data-i18n="insightT">Insights</h3></div>
+          <div class="card-b" id="insights"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3 data-i18n="whatifT">What-if</h3>
+          <div class="sp"><button class="btn sm" id="btnResetWhatIf" data-i18n="reset">Reset</button></div></div>
+        <div class="card-b">
+          <div class="slider-row"><label for="wLpr" data-i18n="wLpr">LPR shift</label>
+            <input type="range" id="wLpr" min="-2" max="2" step="0.05" value="0"><output id="wLprO">+0.00%</output></div>
+          <div class="slider-row"><label for="wDep" data-i18n="wDep">Deposit rate shift</label>
+            <input type="range" id="wDep" min="-2" max="2" step="0.05" value="0"><output id="wDepO">+0.00%</output></div>
+          <div class="slider-row"><label for="wReb" data-i18n="wReb">Rebate rate shift</label>
+            <input type="range" id="wReb" min="-1.5" max="1.5" step="0.05" value="0"><output id="wRebO">+0.00%</output></div>
+          <div class="slider-row"><label for="wEarly" data-i18n="wEarly">Repay earlier by</label>
+            <input type="range" id="wEarly" min="0" max="24" step="1" value="0"><output id="wEarlyO">0</output></div>
+          <div id="whatifOut" style="margin-top:16px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="tip"></div>
+<div class="toast" id="toast"></div>
+<div class="modal-bg" id="pasteModal">
+  <div class="modal">
+    <div class="card-h"><h3 data-i18n="pasteT">Paste drawdowns from Excel</h3>
+      <div class="sp"><button class="btn sm ghost" id="pasteClose">✕</button></div></div>
+    <div class="card-b">
+      <p style="margin-top:0;font-size:12.5px;color:var(--ink-2)" data-i18n="pasteHelp">Copy two columns — date first, amount second. Excel date serial numbers work too.</p>
+      <textarea id="pasteBox" rows="10" placeholder="2024-12-23&#9;2082831.82"></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+        <button class="btn" id="pasteCancel" data-i18n="cancel">Cancel</button>
+        <button class="btn primary" id="pasteGo" data-i18n="addRows">Add rows</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+"use strict";
+/* ============================================================
+   1. LANGUAGE
+   ============================================================ */
+const DICT = {
+en:{
+ appName:"Loan Calculator", appSub:"Drawdowns · repayments · subsidies",
+ reportDate:"Reporting date", save:"Save", open:"Open", scope:"Scope",
+ tabSetup:"Loan setup", tabSheet:"Repayment statement", tabInterest:"Interest & rebate",
+ tabDash:"Dashboard", tabInsight:"Insights",
+ loans:"Loans", add:"+ Add", loadSample:"Load sample", clearAll:"Clear all",
+ sheetSub:"One sheet per loan — principal repaid, principal outstanding and the subsidy earned on each instalment",
+ intSub:"Accrued from each drawdown date to the reporting date",
+ exportCsv:"Export CSV", print:"Print / PDF", reset:"Reset", cancel:"Cancel", addRows:"Add rows",
+ railTitle:"Facility rail", railSub:"Every drawdown to scale, oldest first",
+ legendOut:"Outstanding", legendRepaid:"Repaid", legendFree:"Unutilised", legendDrawn:"Cumulative drawn",
+ chartCumT:"Drawn vs repaid", chartCumS:"Cumulative", chartFutT:"Future principal due", chartFutS:"After the reporting date",
+ loanTableT:"Loan summary", checkT:"Data check", insightT:"Insights", whatifT:"What-if",
+ wLpr:"LPR shift", wDep:"Deposit rate shift", wReb:"Rebate rate shift", wEarly:"Repay earlier by",
+ pasteT:"Paste drawdowns from Excel", pasteHelp:"Copy two columns — date first, amount second. Excel date serial numbers work too.",
+ identity:"Loan details", facilityDates:"Facility & dates", ratesT:"Rates", incentives:"Government subsidy",
+ loanName:"Loan name", facilityNo:"Facility number", lender:"Lender", borrower:"Borrower", guarantor:"Guarantor",
+ currency:"Currency", loanType:"Loan type", tenure:"Tenure", facility:"Total facility",
+ commencement:"Commencement date", maturity:"Maturity date", maturityHint:"Set automatically: commencement + tenure",
+ drawnUnused:"Drawn / unutilised",
+ lpr:"Loan prime rate %", discount:"Bank discount %", loanRateL:"Loan interest rate %",
+ taxRate:"Tax rate %", depositRate:"Time deposit rate %", rebateRate:"Subsidy rate %",
+ maxRebateDate:"Subsidy period ends", maxRebateHint:"Subsidy stops accruing after this date",
+ drawdowns:"Drawdowns", addDrawdown:"+ Add drawdown", pasteExcel:"Paste from Excel",
+ cutoff:"Cut off day", ddDate:"Drawdown date", ddAmount:"Drawdown amount",
+ duplicate:"Duplicate", deleteLoan:"Delete loan",
+ schedT:"Repayment schedule", schedSub:"Fixed pattern: 10% at 12, 18, 24 and 30 months, balance at maturity. Each drawdown joins from the first deadline after it is drawn.",
+ grpPaid:"Principal repaid", grpUnpaid:"Principal outstanding",
+ dueDate:"Subsidy end date", days:"Days", subRemain:"Subsidy on remaining balance", subTotal:"Total subsidy",
+ total:"Total", balance:"Balance", instal:"instalment",
+ repaidAmt:"Repaid", curBal:"Current balance", rate:"Rate", intBefore:"Interest before tax", taxL:"Tax",
+ intIncl:"Interest incl. tax", depInc:"Deposit income (sim.)", diff:"Interest differential", rebate:"Subsidy received",
+ kDraws:"Drawdowns", kDrawn:"Total drawn", kRepaid:"Repaid to date", kOut:"Outstanding",
+ kRemain:"Remaining to pay", kInterest:"Interest accrued", kRebate:"Subsidy accrued", kNet:"Net borrowing cost",
+ kDiff:"Interest differential", ofFacility:"of facility", ofPrincipal:"of principal",
+ inclInterest:"incl. {0} interest to maturity", effective:"effective {0}", annualised:"annualised {0}",
+ noLoans:"No loans yet. Add one, or load the sample to see everything populated.",
+ startTitle:"Start with a loan", startBody:"Add a facility on the left, then record each drawdown. Everything else is calculated from that.",
+ noDd:"No drawdowns yet. Add the first one, or paste a block from the workbook.",
+ nothingYet:"Nothing to show yet", nothingBody:"Add a loan and its drawdowns on the setup tab.",
+ allGood:"Everything checks out — dates, amounts and rates are consistent.",
+ confirmDeleteLoan:"Delete this loan and its drawdowns?", confirmClear:"Remove every loan from this project?",
+ loanAdded:"Loan added", loanDeleted:"Loan deleted", loanDup:"Loan duplicated", sampleLoaded:"Sample loaded",
+ cleared:"Project cleared", saved:"Project saved", opened:"Project opened", exported:"Exported",
+ badFile:"That file isn't a saved loan project", addedN:"{0} drawdowns added", pasteFail:"Nothing recognised — check the two columns",
+ base:"Base", scenario:"Scenario", change:"Change", measure:"Measure",
+ vErrDate:"{0}: a drawdown has no date.", vErrAmt:"{0}: a drawdown has no amount.",
+ vErrOver:"{0} is drawn {1} beyond its facility limit.",
+ vWarnDup:"{0}: two identical drawdowns on {1} — check for a duplicate.",
+ vErrAfterMat:"{0}: the drawdown on {1} falls after maturity.",
+ vWarnBefore:"{0}: the drawdown on {1} is before the commencement date.",
+ vWarnNoDd:"{0} has no drawdowns recorded.",
+ vErrRate:"{0}: the discount is not smaller than the LPR, so the interest rate is zero or negative.",
+ vWarnCutoff:"{0}: the subsidy period ended on {1}, so nothing further accrues.",
+ iCarryPos:"The funds earn <b>{0}</b> more on deposit than the loan costs — an annualised benefit of <b>{1}</b>.",
+ iCarryNeg:"Borrowing costs <b>{0}</b> more than the deposit simulation earns. The deposit rate would need to reach <b>{1}</b> to break even.",
+ iEff:"The subsidy cuts the cost of the money from <b>{0}</b> to <b>{1}</b> — worth <b>{2}</b> so far.",
+ iNext:"<b>{0}</b> falls due on <b>{1}</b> for {2}.",
+ iHead:"<b>{0}</b> of facility is still undrawn — {1} of the limit.",
+ iAhead:"<b>{0}</b> left to pay in total — <b>{1}</b> principal plus <b>{2}</b> of interest to maturity.",
+ iCutoff:"{0} stops earning subsidy on {1}.",
+ settled:"Settled", scheduled:"Scheduled", asOf:"as of {0}", loanOf:"Loan",
+ pendingNote:"{0} drawdown(s) dated after the reporting date are not shown"
+},
+zh:{
+ appName:"貸款計算器", appSub:"提款 · 還款 · 補貼",
+ reportDate:"報表日期", save:"儲存", open:"開啟", scope:"範圍",
+ tabSetup:"貸款設定", tabSheet:"本金還款表", tabInterest:"利息及補貼",
+ tabDash:"儀表板", tabInsight:"分析",
+ loans:"貸款", add:"+ 新增", loadSample:"載入範例", clearAll:"全部清除",
+ sheetSub:"每筆貸款一張表 — 本金已還款、本金未還款，以及每期還款所賺取的補貼款",
+ intSub:"由每次借款日期累計至報表日期",
+ exportCsv:"匯出 CSV", print:"列印 / PDF", reset:"重設", cancel:"取消", addRows:"加入資料",
+ railTitle:"額度概覽", railSub:"每筆借款按金額比例顯示，由最早開始",
+ legendOut:"未還款", legendRepaid:"已還款", legendFree:"未動用額度", legendDrawn:"累計借款",
+ chartCumT:"借款與還款", chartCumS:"累計", chartFutT:"未來應還本金", chartFutS:"報表日期之後",
+ loanTableT:"貸款總覽", checkT:"資料檢查", insightT:"分析重點", whatifT:"情境分析",
+ wLpr:"LPR 變動", wDep:"存款利率變動", wReb:"補貼率變動", wEarly:"提早還款",
+ pasteT:"由 Excel 貼上借款資料", pasteHelp:"複製兩欄 — 第一欄日期，第二欄金額。Excel 日期序號亦可。",
+ identity:"貸款資料", facilityDates:"額度及日期", ratesT:"利率", incentives:"政府補貼",
+ loanName:"貸款名稱", facilityNo:"合約編號", lender:"貸款人", borrower:"借款人", guarantor:"擔保人",
+ currency:"幣種", loanType:"貸款類別", tenure:"年期", facility:"借款上限",
+ commencement:"開始日期", maturity:"合約到期日", maturityHint:"自動計算：開始日期 + 年期",
+ drawnUnused:"已借款 / 剩餘額度",
+ lpr:"貸款市場報價利率 LPR %", discount:"合約基點折扣 %", loanRateL:"實際貸款利率 %",
+ taxRate:"稅率 %", depositRate:"定期存款利率 %", rebateRate:"補貼比例 %",
+ maxRebateDate:"補貼期結束日", maxRebateHint:"此日期之後不再累計補貼",
+ drawdowns:"借款記錄", addDrawdown:"+ 新增借款", pasteExcel:"由 Excel 貼上",
+ cutoff:"Cut off Day", ddDate:"借款日期", ddAmount:"借款金額",
+ duplicate:"複製", deleteLoan:"刪除貸款",
+ schedT:"還款安排", schedSub:"固定模式：第 12、18、24、30 個月各還 10%，到期日還清餘額。每筆借款由其借款日之後的第一個還款日開始計算。",
+ grpPaid:"本金已還款", grpUnpaid:"本金未還款",
+ dueDate:"到期日", days:"天數", subRemain:"剩餘還款補貼款", subTotal:"補貼款總計",
+ total:"合計", balance:"剩餘", instal:"筆還款補貼款",
+ repaidAmt:"還款金額", curBal:"現存借款金額", rate:"利率", intBefore:"應計利息（不含稅）", taxL:"稅",
+ intIncl:"應計利息（含稅）", depInc:"利息收入（模擬）", diff:"利息差額", rebate:"利息補貼",
+ kDraws:"借款筆數", kDrawn:"已借款金額", kRepaid:"已還款本金", kOut:"未還款本金",
+ kRemain:"尚需支付總額", kInterest:"應計利息", kRebate:"累計補貼", kNet:"淨借款成本",
+ kDiff:"利息差額", ofFacility:"佔額度", ofPrincipal:"佔本金",
+ inclInterest:"包含至到期日利息 {0}", effective:"實際 {0}", annualised:"年化 {0}",
+ noLoans:"尚未有貸款。請新增一筆，或載入範例查看效果。",
+ startTitle:"由一筆貸款開始", startBody:"先在左邊新增額度，再逐筆輸入借款。其餘數字全部自動計算。",
+ noDd:"尚未有借款記錄。請新增第一筆，或由工作表貼上。",
+ nothingYet:"暫時沒有資料", nothingBody:"請先在設定頁新增貸款及借款記錄。",
+ allGood:"資料正常 — 日期、金額及利率一致。",
+ confirmDeleteLoan:"確定刪除此貸款及其借款記錄？", confirmClear:"確定清除所有貸款？",
+ loanAdded:"已新增貸款", loanDeleted:"已刪除貸款", loanDup:"已複製貸款", sampleLoaded:"已載入範例",
+ cleared:"已清除", saved:"已儲存", opened:"已開啟", exported:"已匯出",
+ badFile:"此檔案不是已儲存的貸款專案", addedN:"已加入 {0} 筆借款", pasteFail:"未能識別 — 請檢查兩欄資料",
+ base:"基準", scenario:"情境", change:"變動", measure:"項目",
+ vErrDate:"{0}：有借款記錄沒有日期。", vErrAmt:"{0}：有借款記錄沒有金額。",
+ vErrOver:"{0} 已超出借款上限 {1}。",
+ vWarnDup:"{0}：{1} 有兩筆相同的借款，請檢查是否重複。",
+ vErrAfterMat:"{0}：{1} 的借款在合約到期日之後。",
+ vWarnBefore:"{0}：{1} 的借款在開始日期之前。",
+ vWarnNoDd:"{0} 尚未有借款記錄。",
+ vErrRate:"{0}：折扣不小於 LPR，利率為零或負數。",
+ vWarnCutoff:"{0}：補貼期已於 {1} 結束，之後不再累計。",
+ iCarryPos:"資金存款收益比貸款成本多 <b>{0}</b>，年化收益 <b>{1}</b>。",
+ iCarryNeg:"貸款成本比模擬存款收益多 <b>{0}</b>。存款利率需達 <b>{1}</b> 才能打和。",
+ iEff:"補貼令資金成本由 <b>{0}</b> 降至 <b>{1}</b>，至今相當於 <b>{2}</b>。",
+ iNext:"下一期 <b>{0}</b> 於 <b>{1}</b> 到期（{2}）。",
+ iHead:"尚有 <b>{0}</b> 額度未動用，佔上限 {1}。",
+ iAhead:"尚需支付 <b>{0}</b>：本金 <b>{1}</b> 加至到期日利息 <b>{2}</b>。",
+ iCutoff:"{0} 的補貼於 {1} 結束。",
+ settled:"已還", scheduled:"未還", asOf:"截至 {0}", loanOf:"貸款",
+ pendingNote:"另有 {0} 筆借款日期在報表日期之後，未顯示"
+}};
+let LANG = "en";
+function t(k,...a){ let s = (DICT[LANG]&&DICT[LANG][k]) || DICT.en[k] || k;
+  a.forEach((v,i)=> s = s.replace("{"+i+"}", v)); return s; }
+const ORD_EN=["1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th"];
+const ORD_ZH=["一","二","三","四","五","六","七","八","九","十"];
+function instalLabel(i){ return LANG==="zh" ? `第${ORD_ZH[i]||(i+1)}筆還款補貼款` : `${ORD_EN[i]||(i+1)+"th"} instalment subsidy`; }
+
+/* ============================================================
+   2. UTILITIES
+   ============================================================ */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const uid = ()=>Math.random().toString(36).slice(2,9);
+const DAY = 86400000;
+const nf = (n,d=2)=> (n===null||n===undefined||isNaN(n)) ? "—" : n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+function nfc(n){ if(n===null||n===undefined||isNaN(n)) return "—";
+  const a=Math.abs(n), s=n<0?"-":"";
+  if(a>=1e9) return s+(a/1e9).toFixed(2)+"B";
+  if(a>=1e6) return s+(a/1e6).toFixed(2)+"M";
+  if(a>=1e3) return s+(a/1e3).toFixed(1)+"K";
+  return s+a.toFixed(2); }
+const pctf = (n,d=2)=> (n===null||isNaN(n)) ? "—" : (n*100).toFixed(d)+"%";
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = ()=> new Date().toISOString().slice(0,10);
+function toDate(iso){ if(!iso) return null; const d=new Date(iso+"T00:00:00Z"); return isNaN(d)?null:d; }
+function days(a,b){ const A=toDate(a),B=toDate(b); if(!A||!B) return 0; return Math.round((B-A)/DAY); }
+function idays(a,b){ const n=days(a,b); return n<0?0:n+1; }
+function addDays(iso,n){ const d=toDate(iso); if(!d) return iso; d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+function addMonths(iso,m){ const d=toDate(iso); if(!d) return iso; const day=d.getUTCDate();
+  d.setUTCMonth(d.getUTCMonth()+m); if(d.getUTCDate()<day) d.setUTCDate(0); return d.toISOString().slice(0,10); }
+function monthEnd(iso){ const d=toDate(iso); if(!d) return iso; d.setUTCMonth(d.getUTCMonth()+1,0); return d.toISOString().slice(0,10); }
+function serialToIso(n){ return new Date(Date.UTC(1899,11,30)+Number(n)*DAY).toISOString().slice(0,10); }
+function fmtDate(iso){ if(!iso) return "—"; const d=toDate(iso); if(!d) return "—";
+  const dd=String(d.getUTCDate()).padStart(2,"0"), mm=String(d.getUTCMonth()+1).padStart(2,"0");
+  return LANG==="zh" ? `${d.getUTCFullYear()}/${mm}/${dd}` : `${dd}/${mm}/${d.getUTCFullYear()}`; }
+const minD=(a,b)=> !a?b : !b?a : (a<b?a:b);
+
+/* ============================================================
+   3. STATE
+   ============================================================ */
+const CCY_SYM = {CNY:"¥",HKD:"HK$",USD:"$"};
+const LENDERS = ["BOC","SCB","ICBC","BoCom","HSBC","Other"];
+const TYPES_EN = ["Fixed Assets","Working Capital","Equipment","Trade Finance"];
+const TYPES_ZH = ["固定資產","流動資金","設備貸款","貿易融資"];
+function blankLoan(n=1){
+  return { id:uid(), name:(LANG==="zh"?"貸款 ":"Loan ")+n, facilityNo:"", lender:"BOC", borrower:"", guarantor:"",
+    currency:"CNY", typeIdx:0, tenureYears:3,
+    facility:0, commencement:today(),
+    lpr:3.00, discount:0.66, taxRate:6, depositRate:1.70, rebateRate:1.50, maxRebateDate:"",
+    drawdowns:[] };
+}
+let S = { reportDate:"2026-07-31", scope:"all", ccy:"CNY", fx:{CNY:1,HKD:0.912,USD:7.10},
+  selected:null, sheetLoan:null, intLoan:null, loans:[], whatif:{lpr:0,dep:0,reb:0,early:0} };
+const STORE_KEY="loanCalc.v2";
+function persist(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify({...S,whatif:undefined})); }catch(e){} }
+function restore(){ try{ const raw=localStorage.getItem(STORE_KEY); if(!raw) return false;
+  const d=JSON.parse(raw); if(!d||!Array.isArray(d.loans)||!d.loans.length) return false;
+  S={...S,...d,whatif:{lpr:0,dep:0,reb:0,early:0}}; return true; }catch(e){ return false; } }
+
+const loanRate = (l,wi)=> ((Number(l.lpr)+(wi?wi.lpr:0)) - Number(l.discount))/100;
+const depRate  = (l,wi)=> (Number(l.depositRate)+(wi?wi.dep:0))/100;
+const rebRate  = (l,wi)=> Math.max(0,(Number(l.rebateRate)+(wi?wi.reb:0)))/100;
+const maturityOf = l => addMonths(l.commencement, 12*(Number(l.tenureYears)||3));
+function fx(amount,from){ const a=S.fx[from]??1, b=S.fx[S.ccy]??1; return amount*a/b; }
+const typeName = l => (LANG==="zh"?TYPES_ZH:TYPES_EN)[l.typeIdx||0];
+
+/* ------------------------------------------------------------
+   Fixed repayment pattern: 10% at 12, 18, 24, 30 months …
+   and the remaining balance at maturity.
+   ------------------------------------------------------------ */
+function deriveSchedule(loan, wi){
+  const yrs = Number(loan.tenureYears)||3;
+  const monthsList=[]; for(let m=12; m<12*yrs; m+=6) monthsList.push(m);
+  monthsList.push(12*yrs);
+  const early = wi?wi.early:0;
+  return monthsList.map((m,i)=>({
+    idx:i, months:m,
+    date: addMonths(loan.commencement, m - early),
+    pct: i<monthsList.length-1 ? 10 : null,
+    remainder: i===monthsList.length-1
+  }));
+}
+/* ============================================================
+   4. CALCULATION ENGINE
+   ============================================================ */
+function buildInstalments(loan, wi){
+  const sch = deriveSchedule(loan, wi);
+  const rate = rebRate(loan, wi);
+  const out=[];
+  (loan.drawdowns||[]).slice().sort((a,b)=>a.date<b.date?-1:1).forEach(dd=>{
+    let remain = Number(dd.amount)||0;
+    sch.forEach(p=>{
+      /* a drawdown only joins a deadline that falls after it was drawn */
+      if(!p.date || p.date <= dd.date){ out.push({ddId:dd.id, period:p.idx, date:p.date, amount:0, blank:true}); return; }
+      let amt = p.remainder ? remain : (Number(dd.amount)||0)*(p.pct/100);
+      amt = Math.min(amt, remain); remain -= amt;
+      /* the subsidy runs to the day before the repayment date, capped by the subsidy period end */
+      const eff = addDays(p.date,-1);
+      const cap = loan.maxRebateDate ? minD(eff, loan.maxRebateDate) : eff;
+      const n = Math.max(0, days(dd.date, cap));
+      out.push({ddId:dd.id, period:p.idx, date:p.date, amount:amt, dueDate:cap, rebateDays:n,
+                rebate: amt*rate*n/360, remainder:p.remainder});
+    });
+  });
+  return out;
+}
+
+function interestFor(dd, instal, rate, to){
+  /* interest accrues on the drawdown amount, as the workbook does */
+  const n = idays(dd.date, to);
+  return {amount: (Number(dd.amount)||0)*rate*n/360, days:n};
+}
+
+function computeLoan(loan, wi){
+  const rd = S.reportDate;
+  const rate = loanRate(loan,wi), dRate = depRate(loan,wi), rRate = rebRate(loan,wi);
+  const tax = (Number(loan.taxRate)||0)/100;
+  const sch = deriveSchedule(loan,wi);
+  const instal = buildInstalments(loan,wi);
+  const byDd = {};
+  instal.forEach(i=>{ (byDd[i.ddId]=byDd[i.ddId]||[]).push(i); });
+  const dds = (loan.drawdowns||[]).map(d=>({...d, amount:Number(d.amount)||0})).sort((a,b)=>a.date<b.date?-1:1);
+
+  const rows = dds.map(dd=>{
+    const live = dd.date <= rd;
+    const mine = (byDd[dd.id]||[]);
+    const repaid = live ? mine.filter(i=>i.date<=rd).reduce((s,i)=>s+i.amount,0) : 0;
+    const outstanding = live ? dd.amount - repaid : 0;
+    const n = live ? idays(dd.date, rd) : 0;
+    const gross = live ? interestFor(dd, mine, rate, rd).amount : 0;
+    const net = gross/(1+tax), taxAmt = gross-net;
+    const depIncome = live ? dd.amount*dRate*n/360 : 0;
+    const cap = loan.maxRebateDate ? minD(rd, loan.maxRebateDate) : rd;
+    const rebN = live ? idays(dd.date, cap) : 0;
+    const rebate = live && rebN>0 ? dd.amount*rRate*rebN/360 : 0;
+    const future = mine.filter(i=>i.date>rd && !i.blank);
+    return {...dd, loanId:loan.id, loanName:loan.name, lender:loan.lender, borrower:loan.borrower,
+      currency:loan.currency, rate, live, repaid, outstanding, days:n,
+      interestGross:gross, interestNet:net, tax:taxAmt, depIncome, differential:depIncome-gross,
+      rebate, rebateDays:rebN, netCost:gross-rebate,
+      instalments:mine, subsidyTotal:mine.reduce((s,i)=>s+(i.rebate||0),0),
+      futureDue:future.reduce((s,i)=>s+i.amount,0),
+      nextDue:future.sort((a,b)=>a.date<b.date?-1:1)[0]||null};
+  });
+
+  const liveRows = rows.filter(r=>r.live);
+  const sum = k => liveRows.reduce((s,r)=>s+(r[k]||0),0);
+  const drawn = liveRows.reduce((s,r)=>s+r.amount,0);
+  const weighted = liveRows.reduce((s,r)=>s+r.amount*r.days,0);
+  const pending = rows.filter(r=>!r.live);
+  const T = {id:loan.id, loan, rows, liveRows, schedule:sch, instalments:instal, rate, depRate:dRate,
+    count:liveRows.length, pendingCount:pending.length, pendingAmount:pending.reduce((s,r)=>s+r.amount,0),
+    drawn, facility:Number(loan.facility)||0, unutilised:Math.max(0,(Number(loan.facility)||0)-drawn),
+    repaid:sum('repaid'), outstanding:sum('outstanding'), interestGross:sum('interestGross'),
+    interestNet:sum('interestNet'), tax:sum('tax'), rebate:sum('rebate'), depIncome:sum('depIncome'),
+    differential:sum('differential'), netCost:sum('netCost'), futureDue:sum('futureDue'),
+    subsidyTotal:instal.reduce((s,i)=>s+(i.rebate||0),0), weightedDays:weighted, maturity:maturityOf(loan)};
+  T.effRate = weighted>0 ? T.netCost*360/weighted : 0;
+  T.grossRate = weighted>0 ? T.interestGross*360/weighted : 0;
+  T.annualisedBenefit = weighted>0 ? T.differential*360/weighted : 0;
+  T.breakeven = weighted>0 ? T.netCost*360/weighted : 0;
+  T.utilisation = T.facility>0 ? drawn/T.facility : 0;
+  let bal=T.outstanding, cur=rd, proj=0;
+  instal.filter(i=>i.date>rd && !i.blank).sort((a,b)=>a.date<b.date?-1:1).forEach(i=>{
+    proj += bal*rate*Math.max(0,days(cur,i.date))/360; bal -= i.amount; cur = i.date; });
+  if(bal>0.01 && T.maturity>cur) proj += bal*rate*Math.max(0,days(cur,T.maturity))/360;
+  T.projInterest = proj; T.remainingToPay = T.outstanding + proj;
+  return T;
+}
+
+function scopedLoans(){ return S.scope==="all" ? S.loans : S.loans.filter(l=>l.id===S.scope); }
+function computeAll(wi){
+  const per = scopedLoans().map(l=>computeLoan(l,wi));
+  const A={per,count:0,pendingCount:0,pendingAmount:0,drawn:0,facility:0,unutilised:0,repaid:0,outstanding:0,
+    interestGross:0,interestNet:0,tax:0,rebate:0,depIncome:0,differential:0,netCost:0,futureDue:0,
+    subsidyTotal:0,weightedDays:0,projInterest:0,remainingToPay:0,rows:[],instalments:[],mixed:false};
+  const cc=new Set();
+  per.forEach(T=>{ const c=T.loan.currency; cc.add(c);
+    ["count","pendingCount"].forEach(k=>A[k]+=T[k]);
+    ["drawn","facility","unutilised","repaid","outstanding","interestGross","interestNet","tax","rebate",
+     "depIncome","differential","netCost","futureDue","subsidyTotal","projInterest","remainingToPay",
+     "pendingAmount","weightedDays"].forEach(k=>A[k]+=fx(T[k],c));
+    T.liveRows.forEach(r=>A.rows.push({...r,cur:c}));
+    T.instalments.filter(i=>!i.blank).forEach(i=>A.instalments.push({...i,cur:c,loanName:T.loan.name}));
+  });
+  A.mixed = cc.size>1;
+  A.utilisation = A.facility>0 ? A.drawn/A.facility : 0;
+  A.effRate = A.weightedDays>0 ? A.netCost*360/A.weightedDays : 0;
+  A.grossRate = A.weightedDays>0 ? A.interestGross*360/A.weightedDays : 0;
+  A.annualisedBenefit = A.weightedDays>0 ? A.differential*360/A.weightedDays : 0;
+  A.breakeven = A.effRate;
+  A.rows.sort((a,b)=>a.date<b.date?-1:1);
+  A.instalments.sort((a,b)=>a.date<b.date?-1:1);
+  return A;
+}
+
+/* ============================================================
+   5. TOOLTIP + TOAST
+   ============================================================ */
+const tipEl=$("#tip");
+function showTip(html,x,y){ tipEl.innerHTML=html; tipEl.classList.add("on");
+  const r=tipEl.getBoundingClientRect(); let left=x+14, top=y+16;
+  if(left+r.width>innerWidth-10) left=x-r.width-14;
+  if(top+r.height>innerHeight-10) top=y-r.height-14;
+  tipEl.style.left=Math.max(8,left)+"px"; tipEl.style.top=Math.max(8,top)+"px"; }
+const hideTip=()=>tipEl.classList.remove("on");
+function tipHTML(raw){ const [body,title,formula]=raw.split("|");
+  return (title?`<div class="t">${esc(title)}</div>`:"")+esc(body)+(formula?`<div class="f">${esc(formula)}</div>`:""); }
+document.addEventListener("mouseover",e=>{ const t=e.target.closest("[data-tip]"); if(t) showTip(tipHTML(t.dataset.tip),e.clientX,e.clientY); });
+document.addEventListener("mousemove",e=>{ const t=e.target.closest("[data-tip]"); if(t&&tipEl.classList.contains("on")) showTip(tipEl.innerHTML,e.clientX,e.clientY); });
+document.addEventListener("mouseout",e=>{ if(e.target.closest("[data-tip]")) hideTip(); });
+document.addEventListener("focusin",e=>{ const t=e.target.closest("[data-tip]");
+  if(t){ const r=t.getBoundingClientRect(); showTip(tipHTML(t.dataset.tip),r.left,r.bottom); } });
+document.addEventListener("focusout",hideTip);
+document.addEventListener("scroll",hideTip,true);
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("on"),2200); }
+/* ============================================================
+   6. SETUP VIEW
+   ============================================================ */
+function renderLoanList(){
+  const box=$("#loanList");
+  if(!S.loans.length){ box.innerHTML=`<div style="padding:18px 13px;color:var(--ink-3);font-size:12.5px">${t("noLoans")}</div>`; return; }
+  box.innerHTML = S.loans.map(l=>{ const T=computeLoan(l,null);
+    return `<button class="item ${l.id===S.selected?'sel':''}" data-pick="${l.id}">
+      <div class="nm">${esc(l.name)}</div>
+      <div class="mt">${CCY_SYM[l.currency]}${nfc(T.drawn)} · ${T.count} ${LANG==="zh"?"筆":"draws"}</div>
+      <div class="bar-mini"><i style="width:${Math.min(100,T.utilisation*100).toFixed(1)}%"></i></div>
+      <div class="mt">${pctf(T.utilisation,1)} ${t("ofFacility")}</div></button>`; }).join("");
+}
+function numField(l,key,label,step="0.01",tip){
+  return `<div class="field"><label>${label}${tip?` <span class="info" data-tip="${esc(tip)}">i</span>`:""}</label>
+    <input type="number" step="${step}" data-lf="${key}" value="${l[key]??""}"></div>`;
+}
+function renderEditor(){
+  const box=$("#loanEditor");
+  const l=S.loans.find(x=>x.id===S.selected);
+  if(!l){ box.innerHTML=`<div class="card"><div class="empty"><h3>${t("startTitle")}</h3><p>${t("startBody")}</p></div></div>`; return; }
+  const T=computeLoan(l,null), rate=loanRate(l,null);
+  const types=(LANG==="zh"?TYPES_ZH:TYPES_EN);
+  box.innerHTML=`
+  <div class="card">
+    <div class="card-h"><h3>${esc(l.name)}</h3><span class="sub">${esc(l.facilityNo)}</span>
+      <div class="sp"><button class="btn sm" data-dup="${l.id}">${t("duplicate")}</button>
+        <button class="btn sm danger" data-del-loan="${l.id}">${t("deleteLoan")}</button></div></div>
+    <div class="card-b">
+      <div class="eyebrow" style="margin-bottom:10px">${t("identity")}</div>
+      <div class="grid g4">
+        <div class="field"><label>${t("loanName")}</label><input data-lf="name" value="${esc(l.name)}"></div>
+        <div class="field"><label>${t("facilityNo")}</label><input data-lf="facilityNo" value="${esc(l.facilityNo)}"></div>
+        <div class="field"><label>${t("lender")}</label><select data-lf="lender">${LENDERS.map(x=>`<option ${x===l.lender?'selected':''}>${x}</option>`).join("")}</select></div>
+        <div class="field"><label>${t("borrower")}</label><input data-lf="borrower" value="${esc(l.borrower)}"></div>
+        <div class="field"><label>${t("guarantor")}</label><input data-lf="guarantor" value="${esc(l.guarantor)}"></div>
+        <div class="field"><label>${t("currency")}</label><select data-lf="currency">${Object.keys(CCY_SYM).map(x=>`<option ${x===l.currency?'selected':''}>${x}</option>`).join("")}</select></div>
+        <div class="field"><label>${t("loanType")}</label><select data-lf="typeIdx">${types.map((x,i)=>`<option value="${i}" ${i===(l.typeIdx||0)?'selected':''}>${x}</option>`).join("")}</select></div>
+        <div class="field"><label>${t("tenure")}</label><select data-lf="tenureYears">${[1,2,3,5,10].map(y=>`<option value="${y}" ${y===Number(l.tenureYears)?'selected':''}>${y} ${LANG==="zh"?"年":"yr"}</option>`).join("")}</select></div>
+      </div>
+
+      <div class="eyebrow" style="margin:18px 0 10px">${t("facilityDates")}</div>
+      <div class="grid g4">
+        ${numField(l,"facility",t("facility"),"1000")}
+        <div class="field"><label>${t("commencement")}</label><input type="date" data-lf="commencement" value="${l.commencement||""}"></div>
+        <div class="field"><label>${t("maturity")}</label><input type="date" readonly value="${T.maturity}"
+          data-tip="${esc(t("maturityHint"))}"><div class="hint">${t("maturityHint")}</div></div>
+        <div class="field"><label>${t("drawnUnused")}</label><input readonly value="${nf(T.drawn,0)} / ${nf(T.unutilised,0)}"></div>
+      </div>
+
+      <div class="eyebrow" style="margin:18px 0 10px">${t("ratesT")}</div>
+      <div class="grid g5">
+        ${numField(l,"lpr",t("lpr"))}
+        ${numField(l,"discount",t("discount"))}
+        <div class="field"><label>${t("loanRateL")}</label><input readonly value="${(rate*100).toFixed(4)}"
+          data-tip="${esc(`|${t("loanRateL")}|${l.lpr}% − ${l.discount}% = ${(rate*100).toFixed(4)}%`)}"></div>
+        ${numField(l,"taxRate",t("taxRate"))}
+        ${numField(l,"depositRate",t("depositRate"))}
+      </div>
+
+      <div class="eyebrow" style="margin:18px 0 10px">${t("incentives")}</div>
+      <div class="grid g4">
+        ${numField(l,"rebateRate",t("rebateRate"))}
+        <div class="field"><label>${t("maxRebateDate")} <span class="info" data-tip="${esc(t("maxRebateHint"))}">i</span></label>
+          <input type="date" data-lf="maxRebateDate" value="${l.maxRebateDate||""}"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h3>${t("schedT")}</h3><span class="sub">${t("schedSub")}</span></div>
+    <div class="card-b"><div class="schedule-strip">
+      ${T.schedule.map((p,i)=>`<div class="step"><div class="k">${p.months} ${LANG==="zh"?"個月":"months"}</div>
+        <div class="v">${fmtDate(p.date)}</div>
+        <div class="p">${p.remainder?t("balance"):"10%"}</div></div>`).join("")}
+    </div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h3>${t("drawdowns")}</h3><span class="sub">${T.rows.length} · ${CCY_SYM[l.currency]}${nf(T.rows.reduce((s,r)=>s+r.amount,0),2)}</span>
+      <div class="sp"><button class="btn sm" id="btnPaste">${t("pasteExcel")}</button>
+        <button class="btn sm primary" id="btnAddDd">${t("addDrawdown")}</button></div></div>
+    <div class="card-b">
+      <div class="dd-row dd-head"><span>${t("cutoff")}</span><span>${t("ddDate")}</span><span>${t("ddAmount")}</span><span></span></div>
+      <div id="ddRows">${(l.drawdowns||[]).slice().sort((a,b)=>a.date<b.date?-1:1).map(d=>`
+        <div class="dd-row">
+          <input type="date" data-dd="${d.id}" data-df="cutoff" value="${d.cutoff||monthEnd(d.date)}">
+          <input type="date" data-dd="${d.id}" data-df="date" value="${d.date||""}">
+          <input type="number" step="0.01" data-dd="${d.id}" data-df="amount" value="${d.amount??""}">
+          <button class="btn sm ghost danger" data-del-dd="${d.id}">✕</button>
+        </div>`).join("") || `<div style="color:var(--ink-3);font-size:12.5px;padding:6px 0">${t("noDd")}</div>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   7. REPAYMENT STATEMENT  (本金還款 layout, one sheet per loan)
+   ============================================================ */
+function loanTabs(containerId, current, attr){
+  const box=$("#"+containerId);
+  box.innerHTML = S.loans.map(l=>`<button class="subtab" ${attr}="${l.id}" aria-selected="${l.id===current}">${esc(l.name)}</button>`).join("");
+}
+function statementModel(loan){
+  const T = computeLoan(loan,null);
+  const settled = T.schedule.filter(p=>p.date<=S.reportDate);
+  const future  = T.schedule.filter(p=>p.date> S.reportDate);
+  const rows = T.liveRows.map(r=>{
+    const get = i => r.instalments.find(x=>x.period===i) || {amount:0, blank:true};
+    const futInst = future.map(p=>get(p.idx)).filter(x=>!x.blank && x.amount>0);
+    const dues = [...new Set(futInst.map(x=>x.dueDate))];
+    return { r,
+      settled: settled.map(p=>get(p.idx)),
+      future:  future.map(p=>get(p.idx)),
+      futureDue: dues.length===1 ? dues[0] : null,
+      futureDays: dues.length===1 ? (futInst[0]?futInst[0].rebateDays:0) : null,
+      futureRebate: futInst.reduce((s,x)=>s+x.rebate,0),
+      totalRebate: r.subsidyTotal };
+  });
+  return {T, settled, future, rows};
+}
+function renderStatement(){
+  if(!S.loans.length){ $("#sheetTabs").innerHTML=""; $("#sheetHead").innerHTML="";
+    $("#sheetWrap").innerHTML=`<div class="empty"><h3>${t("nothingYet")}</h3><p>${t("nothingBody")}</p></div>`; return; }
+  if(!S.loans.some(l=>l.id===S.sheetLoan)) S.sheetLoan=S.loans[0].id;
+  loanTabs("sheetTabs", S.sheetLoan, "data-sheet-loan");
+  const loan=S.loans.find(l=>l.id===S.sheetLoan);
+  const M=statementModel(loan), T=M.T, sy=CCY_SYM[loan.currency];
+
+  $("#sheetHead").innerHTML=`<div class="card-b" style="padding-bottom:0">
+    <div class="kpis" style="margin-bottom:12px">
+      ${kpiTile(t("kDraws"), T.count, `${t("asOf",fmtDate(S.reportDate))}`, "k-o")}
+      ${kpiTile(t("kDrawn"), sy+nfc(T.drawn), `${pctf(T.utilisation,1)} ${t("ofFacility")} ${sy}${nfc(T.facility)}`, "k-o")}
+      ${kpiTile(t("kRepaid"), sy+nfc(T.repaid), T.drawn>0?`${pctf(T.repaid/T.drawn,1)} ${t("ofPrincipal")}`:"", "k-p")}
+      ${kpiTile(t("kOut"), sy+nfc(T.outstanding), "", "k-o")}
+      ${kpiTile(t("subTotal"), sy+nfc(T.subsidyTotal), `${t("rebateRate")} ${nf(loan.rebateRate,2)}%`, "k-p")}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <span class="chip o">${esc(loan.lender)}</span><span class="chip">${esc(loan.borrower||"—")}</span>
+      <span class="chip">${loan.currency}</span><span class="chip">${typeName(loan)}</span>
+      <span class="chip">${t("commencement")} ${fmtDate(loan.commencement)}</span>
+      <span class="chip">${t("maturity")} ${fmtDate(T.maturity)}</span>
+      ${loan.maxRebateDate?`<span class="chip w">${t("maxRebateDate")} ${fmtDate(loan.maxRebateDate)}</span>`:""}
+      ${T.pendingCount?`<span class="chip n">${t("pendingNote",T.pendingCount)}</span>`:""}
+    </div></div>`;
+
+  const nS=M.settled.length, nF=M.future.length;
+  let h1=`<tr><th class="grp" colspan="3"></th>`;
+  if(nS) h1+=`<th class="grp sep" colspan="${nS*4}">${t("grpPaid")}</th>`;
+  if(nF) h1+=`<th class="grp sep" colspan="${nF+3}">${t("grpUnpaid")}</th>`;
+  h1+=`<th class="grp sep" colspan="1"></th></tr>`;
+
+  let h2=`<tr class="r2"><th class="l">${t("cutoff")}</th><th class="l">${t("ddDate")}</th><th>${t("ddAmount")}</th>`;
+  M.settled.forEach((p,i)=>{ h2+=`<th class="sep">${fmtDate(p.date)}（10%）</th><th class="l">${t("dueDate")}</th>
+    <th>${t("days")}</th><th class="reb">${instalLabel(p.idx)}</th>`; });
+  M.future.forEach((p,i)=>{ h2+=`<th class="${i===0?'sep':''}">${fmtDate(p.date)}（${p.remainder?t("balance"):"10%"}）</th>`; });
+  if(nF) h2+=`<th class="l">${t("dueDate")}</th><th>${t("days")}</th><th class="reb">${t("subRemain")}</th>`;
+  h2+=`<th class="reb sep">${t("subTotal")}</th></tr>`;
+
+  const body=M.rows.map(x=>{
+    const r=x.r;
+    let tr=`<tr><td class="l">${fmtDate(r.cutoff||monthEnd(r.date))}</td><td class="l">${fmtDate(r.date)}</td><td>${nf(r.amount,2)}</td>`;
+    x.settled.forEach(inst=>{
+      if(inst.blank||!inst.amount) tr+=`<td class="sep"></td><td class="l"></td><td></td><td class="reb"></td>`;
+      else tr+=`<td class="sep">${nf(inst.amount,2)}</td><td class="l">${fmtDate(inst.dueDate)}</td><td>${nf(inst.rebateDays,0)}</td>
+        <td class="reb" data-tip="${esc(`|${t("subTotal")}|${nf(inst.amount,2)} × ${nf(loan.rebateRate,2)}% × ${inst.rebateDays}/360 = ${nf(inst.rebate,2)}`)}">${nf(inst.rebate,2)}</td>`;
+    });
+    x.future.forEach((inst,i)=>{ tr+=`<td class="${i===0?'sep':''}">${inst.blank||!inst.amount?"":nf(inst.amount,2)}</td>`; });
+    if(nF) tr+=`<td class="l">${x.futureDue?fmtDate(x.futureDue):""}</td><td>${x.futureDays!==null?nf(x.futureDays,0):""}</td>
+      <td class="reb">${x.futureRebate?nf(x.futureRebate,2):""}</td>`;
+    tr+=`<td class="reb sep">${nf(x.totalRebate,2)}</td></tr>`;
+    return tr;
+  }).join("");
+
+  const colSum=(fn)=>M.rows.reduce((s,x)=>s+fn(x),0);
+  let foot=`<tr><td class="l"></td><td class="l">${t("total")}</td><td>${nf(colSum(x=>x.r.amount),2)}</td>`;
+  M.settled.forEach((p,i)=>{ foot+=`<td class="sep">${nf(colSum(x=>x.settled[i].amount||0),2)}</td><td class="l"></td><td></td>
+    <td class="reb">${nf(colSum(x=>x.settled[i].rebate||0),2)}</td>`; });
+  M.future.forEach((p,i)=>{ foot+=`<td class="${i===0?'sep':''}">${nf(colSum(x=>x.future[i].amount||0),2)}</td>`; });
+  if(nF) foot+=`<td class="l"></td><td></td><td class="reb">${nf(colSum(x=>x.futureRebate),2)}</td>`;
+  foot+=`<td class="reb sep">${nf(colSum(x=>x.totalRebate),2)}</td></tr>`;
+
+  $("#sheetWrap").innerHTML=`<table><thead>${h1}${h2}</thead><tbody>${body}</tbody><tfoot>${foot}</tfoot></table>`;
+}
+
+/* ============================================================
+   8. INTEREST & REBATE SHEET
+   ============================================================ */
+function renderInterest(){
+  if(!S.loans.length){ $("#intTabs").innerHTML=""; $("#intHead").innerHTML="";
+    $("#intWrap").innerHTML=`<div class="empty"><h3>${t("nothingYet")}</h3><p>${t("nothingBody")}</p></div>`; return; }
+  if(!S.loans.some(l=>l.id===S.intLoan)) S.intLoan=S.loans[0].id;
+  loanTabs("intTabs", S.intLoan, "data-int-loan");
+  const loan=S.loans.find(l=>l.id===S.intLoan);
+  const T=computeLoan(loan,null), sy=CCY_SYM[loan.currency];
+  $("#intHead").innerHTML=`<div class="card-b" style="padding-bottom:0"><div class="kpis" style="margin-bottom:12px">
+    ${kpiTile(t("kInterest"), sy+nfc(T.interestGross), `${t("taxL")} ${sy}${nfc(T.tax)}`, "k-n")}
+    ${kpiTile(t("kRebate"), sy+nfc(T.rebate), `${nf(loan.rebateRate,2)}%`, "k-p")}
+    ${kpiTile(t("kDiff"), sy+nfc(T.differential), t("annualised",pctf(T.annualisedBenefit)), T.differential>=0?"k-p":"k-n")}
+    ${kpiTile(t("kNet"), sy+nfc(T.netCost), t("effective",pctf(T.effRate)), "k-o")}
+    ${kpiTile(t("kRemain"), sy+nfc(T.remainingToPay), t("inclInterest",sy+nfc(T.projInterest)), "k-w")}
+  </div></div>`;
+  const cols=[[t("ddDate"),"l"],[t("ddAmount")],[t("repaidAmt")],[t("curBal")],[t("days")],[t("rate")],
+    [t("intBefore")],[t("taxL")],[t("intIncl")],[t("depInc")],[t("diff")],[t("rebate")]];
+  const body=T.liveRows.map(r=>`<tr>
+    <td class="l">${fmtDate(r.date)}</td><td>${nf(r.amount,2)}</td><td>${nf(r.repaid,2)}</td><td>${nf(r.outstanding,2)}</td>
+    <td data-tip="${esc(`|${t("days")}|${fmtDate(r.date)} → ${fmtDate(S.reportDate)}`)}">${nf(r.days,0)}</td>
+    <td>${(r.rate*100).toFixed(3)}%</td>
+    <td>${nf(r.interestNet,2)}</td><td>${nf(r.tax,2)}</td>
+    <td data-tip="${esc(`|${t("intIncl")}|${nf(r.amount,2)} × ${(r.rate*100).toFixed(3)}% × ${r.days}/360 = ${nf(r.interestGross,2)}`)}">${nf(r.interestGross,2)}</td>
+    <td>${nf(r.depIncome,2)}</td>
+    <td class="${r.differential<0?'num-neg':'num-pos'}">${nf(r.differential,2)}</td>
+    <td class="reb">${nf(r.rebate,2)}</td></tr>`).join("");
+  const S_=k=>T.liveRows.reduce((s,r)=>s+r[k],0);
+  $("#intWrap").innerHTML=`<table><thead><tr>${cols.map(c=>`<th class="${c[1]||''}">${c[0]}</th>`).join("")}</tr></thead>
+    <tbody>${body}</tbody><tfoot><tr><td class="l">${t("total")}</td><td>${nf(S_("amount"),2)}</td>
+    <td>${nf(S_("repaid"),2)}</td><td>${nf(S_("outstanding"),2)}</td><td></td><td></td>
+    <td>${nf(S_("interestNet"),2)}</td><td>${nf(S_("tax"),2)}</td><td>${nf(S_("interestGross"),2)}</td>
+    <td>${nf(S_("depIncome"),2)}</td><td>${nf(S_("differential"),2)}</td><td class="reb">${nf(S_("rebate"),2)}</td></tr></tfoot></table>`;
+}
+/* ============================================================
+   9. DASHBOARD
+   ============================================================ */
+function kpiTile(lab,val,sub,cls,tip){
+  return `<div class="kpi ${cls||''}"><div class="lab">${esc(lab)}${tip?`<span class="info" data-tip="${esc(tip)}">i</span>`:""}</div>
+    <div class="val">${val}</div><div class="sub">${sub||"&nbsp;"}</div></div>`;
+}
+const sym=()=>CCY_SYM[S.ccy]||"";
+function niceMax(v){ if(v<=0) return 1; const p=Math.pow(10,Math.floor(Math.log10(v))); const n=v/p;
+  return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*p; }
+function svgWrap(w,h,inner){ return `<svg class="chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">${inner}</svg>`; }
+
+function chartCumulative(A){
+  const W=560,H=250,P={l:58,r:14,t:14,b:30};
+  const evs=[];
+  A.rows.forEach(r=>evs.push({date:r.date,d:fx(r.amount,r.cur),p:0}));
+  A.instalments.forEach(i=>evs.push({date:i.date,d:0,p:fx(i.amount,i.cur)}));
+  if(!evs.length) return `<div class="empty">—</div>`;
+  evs.sort((a,b)=>a.date<b.date?-1:1);
+  let cd=0,cr=0; const pts=evs.map(e=>{cd+=e.d;cr+=e.p;return{date:e.date,cd,cr,out:cd-cr};});
+  const t0=toDate(pts[0].date).getTime(), t1=Math.max(toDate(pts[pts.length-1].date).getTime(),t0+DAY);
+  const maxY=niceMax(Math.max(...pts.map(p=>p.cd)));
+  const X=d=>P.l+(toDate(d).getTime()-t0)/(t1-t0)*(W-P.l-P.r), Y=v=>H-P.b-(v/maxY)*(H-P.t-P.b);
+  const path=k=>`M${X(pts[0].date)},${Y(0)}`+pts.map(p=>`L${X(p.date)},${Y(p[k])}`).join("");
+  const area=`M${X(pts[0].date)},${Y(0)}`+pts.map(p=>`L${X(p.date)},${Y(p.out)}`).join("")+`L${X(pts[pts.length-1].date)},${Y(0)}Z`;
+  let g="";
+  for(let i=0;i<=4;i++){const v=maxY*i/4;g+=`<line class="grid-l" x1="${P.l}" y1="${Y(v)}" x2="${W-P.r}" y2="${Y(v)}"/><text x="${P.l-7}" y="${Y(v)+3}" text-anchor="end">${nfc(v)}</text>`;}
+  [pts[0],pts[Math.floor(pts.length/2)],pts[pts.length-1]].forEach(p=>{g+=`<text x="${X(p.date)}" y="${H-10}" text-anchor="middle">${p.date.slice(0,7)}</text>`;});
+  const rd=X(S.reportDate);
+  return svgWrap(W,H,`${g}<path d="${area}" fill="var(--o-200)" opacity=".55"/>
+    <path d="${path('cd')}" fill="none" stroke="var(--o-600)" stroke-width="2"/>
+    <path d="${path('cr')}" fill="none" stroke="var(--pos)" stroke-width="2"/>
+    ${rd>P.l&&rd<W-P.r?`<line x1="${rd}" y1="${P.t}" x2="${rd}" y2="${H-P.b}" stroke="var(--ink-3)" stroke-dasharray="3 3"/>`:""}
+    <line class="axis" x1="${P.l}" y1="${H-P.b}" x2="${W-P.r}" y2="${H-P.b}"/>`);
+}
+function chartFuture(A){
+  const W=560,H=250,P={l:56,r:14,t:14,b:44};
+  const map={};
+  A.instalments.filter(i=>i.date>S.reportDate).forEach(i=>{const k=i.date.slice(0,7);map[k]=(map[k]||0)+fx(i.amount,i.cur);});
+  const items=Object.entries(map).sort((a,b)=>a[0]<b[0]?-1:1);
+  if(!items.length) return `<div class="empty">—</div>`;
+  const max=niceMax(Math.max(...items.map(i=>i[1]))), bw=(W-P.l-P.r)/items.length;
+  let g="";
+  for(let i=0;i<=4;i++){const v=max*i/4,y=H-P.b-(v/max)*(H-P.t-P.b);
+    g+=`<line class="grid-l" x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}"/><text x="${P.l-7}" y="${y+3}" text-anchor="end">${nfc(v)}</text>`;}
+  const bars=items.map((it,i)=>{const h=(it[1]/max)*(H-P.t-P.b),x=P.l+i*bw+bw*0.2,y=H-P.b-h;
+    return `<rect x="${x}" y="${y}" width="${bw*0.6}" height="${Math.max(2,h)}" rx="3" fill="var(--o-600)"
+      data-tip="${esc(sym()+nf(it[1],2)+"|"+it[0])}"/><text x="${x+bw*0.3}" y="${H-P.b+15}" text-anchor="middle"
+      transform="rotate(-38 ${x+bw*0.3} ${H-P.b+15})">${it[0]}</text>`;}).join("");
+  return svgWrap(W,H,`${g}${bars}<line class="axis" x1="${P.l}" y1="${H-P.b}" x2="${W-P.r}" y2="${H-P.b}"/>`);
+}
+function renderDash(){
+  const A=computeAll(null);
+  $("#dashKpis").innerHTML=[
+    kpiTile(t("kDraws"),A.count,t("asOf",fmtDate(S.reportDate)),"k-o"),
+    kpiTile(t("kDrawn"),sym()+nfc(A.drawn),`${pctf(A.utilisation,1)} ${t("ofFacility")}`,"k-o"),
+    kpiTile(t("kRepaid"),sym()+nfc(A.repaid),A.drawn>0?`${pctf(A.repaid/A.drawn,1)} ${t("ofPrincipal")}`:"","k-p"),
+    kpiTile(t("kOut"),sym()+nfc(A.outstanding),"","k-o"),
+    kpiTile(t("kRemain"),sym()+nfc(A.remainingToPay),t("inclInterest",sym()+nfc(A.projInterest)),"k-w"),
+    kpiTile(t("kInterest"),sym()+nfc(A.interestGross),`${t("taxL")} ${sym()}${nfc(A.tax)}`,"k-n"),
+    kpiTile(t("kRebate"),sym()+nfc(A.rebate),"","k-p"),
+    kpiTile(t("kNet"),sym()+nfc(A.netCost),t("effective",pctf(A.effRate)),A.netCost>0?"k-n":"k-p"),
+    kpiTile(t("kDiff"),sym()+nfc(A.differential),t("annualised",pctf(A.annualisedBenefit)),A.differential>=0?"k-p":"k-n")
+  ].join("");
+  const rail=$("#rail");
+  if(!A.rows.length){ rail.innerHTML=`<div class="free"></div>`; $("#railNote").textContent=""; }
+  else{
+    const base=A.facility>0?A.facility:A.drawn;
+    rail.innerHTML=A.rows.map(r=>{
+      const amt=fx(r.amount,r.cur), out=fx(r.outstanding,r.cur);
+      return `<div class="seg ${out<=0.01?'repaid':''}" style="width:${amt/base*100}%"
+        data-tip="${esc(`${fmtDate(r.date)} · ${sym()}${nf(amt,2)} · ${t("legendOut")} ${sym()}${nf(out,2)}|${r.loanName}`)}"></div>`;
+    }).join("") + (A.unutilised>0?`<div class="free" data-tip="${esc(t("legendFree")+" "+sym()+nf(A.unutilised,2))}"></div>`:"");
+    $("#railNote").textContent=`${A.count} · ${pctf(A.utilisation,1)}`;
+  }
+  $("#chartCum").innerHTML=chartCumulative(A);
+  $("#chartFuture").innerHTML=chartFuture(A);
+  const cols=[[t("loanOf"),"l"],[t("lender"),"l"],[t("currency"),"l"],[t("facility")],[t("kDrawn")],
+    [t("kRepaid")],[t("kOut")],[t("intIncl")],[t("kRebate")],[t("kNet")],[t("diff")],[t("maturity"),"l"]];
+  $("#loanTable").innerHTML=`<table><thead><tr>${cols.map(c=>`<th class="${c[1]||''}">${c[0]}</th>`).join("")}</tr></thead>
+    <tbody>${A.per.map(T=>{const c=T.loan.currency,m=v=>nf(fx(v,c),2);
+      return `<tr><td class="l">${esc(T.loan.name)}</td><td class="l">${esc(T.loan.lender)}</td><td class="l">${c}</td>
+        <td>${m(T.facility)}</td><td>${m(T.drawn)}</td><td>${m(T.repaid)}</td><td>${m(T.outstanding)}</td>
+        <td>${m(T.interestGross)}</td><td class="num-pos">${m(T.rebate)}</td><td>${m(T.netCost)}</td>
+        <td class="${T.differential<0?'num-neg':'num-pos'}">${m(T.differential)}</td>
+        <td class="l">${fmtDate(T.maturity)}</td></tr>`;}).join("")}</tbody>
+    <tfoot><tr><td class="l">${t("total")}</td><td class="l"></td><td class="l">${S.ccy}</td>
+      <td>${nf(A.facility,2)}</td><td>${nf(A.drawn,2)}</td><td>${nf(A.repaid,2)}</td><td>${nf(A.outstanding,2)}</td>
+      <td>${nf(A.interestGross,2)}</td><td>${nf(A.rebate,2)}</td><td>${nf(A.netCost,2)}</td>
+      <td>${nf(A.differential,2)}</td><td class="l"></td></tr></tfoot></table>`;
+}
+
+/* ============================================================
+   10. VALIDATION · INSIGHTS · WHAT-IF
+   ============================================================ */
+function validate(){
+  const out=[];
+  S.loans.forEach(l=>{
+    const T=computeLoan(l,null), nm=esc(l.name), mat=maturityOf(l);
+    if(!l.drawdowns.length) out.push(["warn",t("vWarnNoDd",nm)]);
+    if(l.facility>0 && T.drawn>l.facility+0.01) out.push(["err",t("vErrOver",nm,CCY_SYM[l.currency]+nf(T.drawn-l.facility,2))]);
+    const seen={};
+    l.drawdowns.forEach(d=>{
+      if(!d.date) out.push(["err",t("vErrDate",nm)]);
+      else{ const k=d.date+"|"+d.amount; if(seen[k]) out.push(["warn",t("vWarnDup",nm,fmtDate(d.date))]); seen[k]=1;
+        if(d.date>mat) out.push(["err",t("vErrAfterMat",nm,fmtDate(d.date))]);
+        if(l.commencement&&d.date<l.commencement) out.push(["warn",t("vWarnBefore",nm,fmtDate(d.date))]); }
+      if(!(Number(d.amount)>0)) out.push(["err",t("vErrAmt",nm)]);
+    });
+    if(loanRate(l,null)<=0) out.push(["err",t("vErrRate",nm)]);
+    if(l.maxRebateDate && l.maxRebateDate<S.reportDate) out.push(["warn",t("vWarnCutoff",nm,fmtDate(l.maxRebateDate))]);
+  });
+  $("#validation").innerHTML = out.length
+    ? out.map(([k,m])=>`<div class="flag ${k}"><span class="ic">${k==="err"?"✕":"!"}</span><div>${m}</div></div>`).join("")
+    : `<div class="flag ok"><span class="ic">✓</span><div>${t("allGood")}</div></div>`;
+}
+function renderInsights(){
+  const A=computeAll(null), out=[];
+  const add=(cls,txt)=>out.push(`<div class="ins"><span class="chip ${cls}">•</span><p>${txt}</p></div>`);
+  if(!A.rows.length){ $("#insights").innerHTML=`<div class="empty">—</div>`; return; }
+  if(A.differential>=0) add("p",t("iCarryPos",sym()+nf(A.differential,2),pctf(A.annualisedBenefit)));
+  else add("n",t("iCarryNeg",sym()+nf(-A.differential,2),pctf(A.breakeven)));
+  add("o",t("iEff",pctf(A.grossRate),pctf(A.effRate),sym()+nf(A.rebate,2)));
+  const next=A.instalments.filter(i=>i.date>S.reportDate)[0];
+  if(next) add("w",t("iNext",sym()+nf(fx(next.amount,next.cur),2),fmtDate(next.date),esc(next.loanName)));
+  if(A.unutilised>0&&A.facility>0) add("w",t("iHead",sym()+nf(A.unutilised,2),pctf(1-A.utilisation,1)));
+  S.loans.filter(l=>l.maxRebateDate&&l.maxRebateDate>S.reportDate&&days(S.reportDate,l.maxRebateDate)<=210)
+    .forEach(l=>add("n",t("iCutoff",esc(l.name),fmtDate(l.maxRebateDate))));
+  add("o",t("iAhead",sym()+nf(A.remainingToPay,2),sym()+nf(A.outstanding,2),sym()+nf(A.projInterest,2)));
+  $("#insights").innerHTML=out.join("");
+}
+function renderWhatIf(){
+  const b=computeAll(null), a=computeAll(S.whatif);
+  const row=(lab,x,y,inv)=>{const d=y-x,good=inv?d<0:d>0,cls=Math.abs(d)<0.005?"":good?"pos":"neg";
+    return `<tr><td class="l">${lab}</td><td>${nf(x,2)}</td><td>${nf(y,2)}</td><td class="${cls}">${d>=0?"+":""}${nf(d,2)}</td></tr>`;};
+  $("#whatifOut").innerHTML=`<table class="tbl-mini"><thead><tr><th class="l">${t("measure")} (${S.ccy})</th>
+    <th>${t("base")}</th><th>${t("scenario")}</th><th>${t("change")}</th></tr></thead><tbody>
+    ${row(t("kInterest"),b.interestGross,a.interestGross,true)}
+    ${row(t("kRebate"),b.rebate,a.rebate)}
+    ${row(t("subTotal"),b.subsidyTotal,a.subsidyTotal)}
+    ${row(t("depInc"),b.depIncome,a.depIncome)}
+    ${row(t("kNet"),b.netCost,a.netCost,true)}
+    ${row(t("kDiff"),b.differential,a.differential)}
+    ${row(t("kOut"),b.outstanding,a.outstanding,true)}
+    </tbody></table>`;
+}
+/* ============================================================
+   11. SAMPLE (BOC equipment facility)
+   ============================================================ */
+const SAMPLE_P1=[[45649,2082831.82],[45652,4218868.74],[45666,6351462],[45677,27635902.89],[45708,1439318.80],
+ [45723,3226685.80],[45737,4186070.88],[45796,1120607.21],[45828,6465711.88],[45849,576200],[45855,990696.58],
+ [45889,1685240.69],[45891,3219370],[45898,3926000.22],[45910,9496287.36],[45919,4947437.16],[45926,3221460],
+ [45947,2653795.36],[45960,4459076.43],[45972,1845900],[45979,11525029.21],[45981,39685600],[45988,2052867.56],
+ [46001,14476095.54],[46009,5676923.92],[46031,7491908.08],[46042,2688720.42],[46051,8329863],[46063,19678468.42],
+ [46091,1141350.85],[46122,7429657.80],[46133,9923906.72],[46151,9865602.81],[46161,33921669.02],[46181,8687796.25],
+ [46196,8677497.58],[46216,2826844.60]];
+const SAMPLE_CUTOFF=[45653,45653,45688,45688,45716,45747,45747,45806,45834,45870,45870,45898,45898,45898,45926,
+ 45926,45926,45961,45961,45989,45989,45989,45989,46017,46017,46052,46052,46052,46080,46112,46143,46143,46171,
+ 46171,46199,46199,46234];
+function sampleProject(){
+  const p1={...blankLoan(), id:uid(), name:LANG==="zh"?"設備貸款（一期）":"Equipment facility — Phase I",
+    facilityNo:"BOC-HSJM-01", lender:"BOC", borrower:"HSJM", guarantor:"HSGD", currency:"CNY", typeIdx:0,
+    tenureYears:3, facility:365191017.66, commencement:"2024-12-23",
+    lpr:3.00, discount:0.66, taxRate:6, depositRate:1.70, rebateRate:1.50, maxRebateDate:"2026-12-22",
+    drawdowns:SAMPLE_P1.map(([s,a],i)=>({id:uid(),date:serialToIso(s),amount:a,cutoff:serialToIso(SAMPLE_CUTOFF[i])}))};
+  const p2={...blankLoan(), id:uid(), name:LANG==="zh"?"設備貸款（二期）":"Equipment facility — Phase II",
+    facilityNo:"BOC-HSJM-02", lender:"BOC", borrower:"HSJM", guarantor:"HSGD", currency:"CNY", typeIdx:0,
+    tenureYears:3, facility:18808982.34, commencement:"2026-07-20",
+    lpr:3.00, discount:0.66, taxRate:6, depositRate:1.70, rebateRate:1.50, maxRebateDate:"",
+    drawdowns:[{id:uid(),date:"2026-07-20",amount:18808982.34,cutoff:"2026-07-31"}]};
+  return [p1,p2];
+}
+
+/* ============================================================
+   12. RENDER + LANGUAGE APPLICATION
+   ============================================================ */
+let activeView="setup";
+function applyStaticI18n(){
+  document.documentElement.setAttribute("lang", LANG==="zh"?"zh":"en");
+  $$("[data-i18n]").forEach(el=> el.textContent = t(el.dataset.i18n));
+  $$(".langsw button").forEach(b=> b.setAttribute("aria-pressed", String(b.dataset.lang===LANG)));
+}
+function renderAll(skipEditor){
+  const sc=$("#gScope"), cur=S.scope;
+  sc.innerHTML=`<option value="all">${LANG==="zh"?"全部貸款（合併）":"All loans (combined)"}</option>`+
+    S.loans.map(l=>`<option value="${l.id}">${esc(l.name)}</option>`).join("");
+  sc.value = (cur==="all"||S.loans.some(l=>l.id===cur)) ? cur : "all"; S.scope=sc.value;
+  renderLoanList();
+  if(!skipEditor) renderEditor();
+  if(activeView==="sheet") renderStatement();
+  if(activeView==="interest") renderInterest();
+  if(activeView==="dash") renderDash();
+  if(activeView==="insight"){ validate(); renderInsights(); renderWhatIf(); }
+  persist();
+}
+function switchView(v){
+  activeView=v;
+  $$(".tab").forEach(x=>x.setAttribute("aria-selected",String(x.dataset.view===v)));
+  $$(".view").forEach(s=>s.classList.toggle("active", s.id==="view-"+v));
+  renderAll();
+}
+function setLang(l){ LANG=l; try{localStorage.setItem("loanCalc.lang",l);}catch(e){}
+  applyStaticI18n(); renderAll(); }
+
+/* ============================================================
+   13. EVENTS
+   ============================================================ */
+$$(".tab").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));
+$$(".langsw button").forEach(b=>b.addEventListener("click",()=>setLang(b.dataset.lang)));
+$("#gReportDate").addEventListener("change",e=>{S.reportDate=e.target.value||today();renderAll();});
+$("#gScope").addEventListener("change",e=>{S.scope=e.target.value;renderAll();});
+$("#gCcy").addEventListener("change",e=>{S.ccy=e.target.value;renderAll();});
+$("#btnPrint").addEventListener("click",()=>window.print());
+$("#btnTheme").addEventListener("click",()=>{
+  const d=document.documentElement.getAttribute("data-theme")==="dark";
+  document.documentElement.setAttribute("data-theme",d?"light":"dark");
+  try{localStorage.setItem("loanCalc.theme",d?"light":"dark");}catch(e){}
+  if(activeView==="dash") renderDash();
+});
+$("#btnAddLoan").addEventListener("click",()=>{const l=blankLoan(S.loans.length+1);S.loans.push(l);S.selected=l.id;renderAll();toast(t("loanAdded"));});
+$("#btnSample").addEventListener("click",()=>{S.loans=sampleProject();S.selected=S.loans[0].id;S.sheetLoan=S.loans[0].id;S.intLoan=S.loans[0].id;
+  S.reportDate="2026-07-31";$("#gReportDate").value=S.reportDate;renderAll();toast(t("sampleLoaded"));});
+$("#btnClearAll").addEventListener("click",()=>{if(!confirm(t("confirmClear")))return;S.loans=[];S.selected=null;renderAll();toast(t("cleared"));});
+
+document.addEventListener("click",e=>{
+  const pick=e.target.closest("[data-pick]");
+  if(pick){S.selected=pick.dataset.pick;renderAll();return;}
+  const sl=e.target.closest("[data-sheet-loan]");
+  if(sl){S.sheetLoan=sl.dataset.sheetLoan;renderStatement();return;}
+  const il=e.target.closest("[data-int-loan]");
+  if(il){S.intLoan=il.dataset.intLoan;renderInterest();return;}
+  const dl=e.target.closest("[data-del-loan]");
+  if(dl){ if(!confirm(t("confirmDeleteLoan")))return;
+    S.loans=S.loans.filter(l=>l.id!==dl.dataset.delLoan);
+    S.selected=S.loans[0]?S.loans[0].id:null; renderAll(); toast(t("loanDeleted")); return;}
+  const dp=e.target.closest("[data-dup]");
+  if(dp){const src=S.loans.find(l=>l.id===dp.dataset.dup);const c=JSON.parse(JSON.stringify(src));
+    c.id=uid();c.name=src.name+(LANG==="zh"?"（複本）":" (copy)");c.drawdowns.forEach(d=>d.id=uid());
+    S.loans.push(c);S.selected=c.id;renderAll();toast(t("loanDup"));return;}
+  const dd=e.target.closest("[data-del-dd]");
+  if(dd){const l=S.loans.find(x=>x.id===S.selected);l.drawdowns=l.drawdowns.filter(d=>d.id!==dd.dataset.delDd);renderAll();return;}
+  if(e.target.id==="btnAddDd"){const l=S.loans.find(x=>x.id===S.selected);if(!l)return;
+    const last=l.drawdowns.slice().sort((a,b)=>a.date<b.date?-1:1).pop();
+    const dt=last?addMonths(last.date,1):(l.commencement||today());
+    l.drawdowns.push({id:uid(),date:dt,amount:0,cutoff:monthEnd(dt)});renderAll();
+    const rows=$$("#ddRows input[data-df='amount']");if(rows.length)rows[rows.length-1].focus();return;}
+  if(e.target.id==="btnPaste"){$("#pasteModal").classList.add("on");$("#pasteBox").focus();return;}
+});
+function applyEdit(el){
+  const l=S.loans.find(x=>x.id===S.selected); if(!l) return;
+  if(el.dataset.lf){ const k=el.dataset.lf;
+    l[k] = (el.type==="number") ? (el.value===""?0:parseFloat(el.value))
+         : (k==="typeIdx"||k==="tenureYears") ? Number(el.value) : el.value;
+  } else if(el.dataset.dd){
+    const d=l.drawdowns.find(x=>x.id===el.dataset.dd); if(!d) return;
+    d[el.dataset.df] = el.dataset.df==="amount" ? (el.value===""?0:parseFloat(el.value)) : el.value;
+    if(el.dataset.df==="date" && !d.cutoffTouched) d.cutoff=monthEnd(el.value);
+    if(el.dataset.df==="cutoff") d.cutoffTouched=true;
+  } else return;
+}
+document.addEventListener("input",e=>{const el=e.target;
+  if(el.dataset.lf||el.dataset.dd){applyEdit(el);renderAll(true);}});
+document.addEventListener("change",e=>{const el=e.target;
+  if(el.dataset.lf||el.dataset.dd){applyEdit(el);renderAll();}});
+
+$("#pasteClose").addEventListener("click",()=>$("#pasteModal").classList.remove("on"));
+$("#pasteCancel").addEventListener("click",()=>$("#pasteModal").classList.remove("on"));
+$("#pasteGo").addEventListener("click",()=>{
+  const l=S.loans.find(x=>x.id===S.selected); if(!l) return;
+  let n=0;
+  $("#pasteBox").value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).forEach(line=>{
+    const p=line.split(/[\t,;]+|\s{2,}/).map(s=>s.trim()).filter(Boolean);
+    if(p.length<2) return;
+    let d=p[0], a=parseFloat(p[1].replace(/[^0-9.\-]/g,""));
+    if(/^\d{5}$/.test(d)) d=serialToIso(d);
+    else if(/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(d)){const q=d.split(/[\/\-]/);
+      d=`${q[0]}-${String(q[1]).padStart(2,"0")}-${String(q[2]).padStart(2,"0")}`;}
+    else if(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(d)){const q=d.split(/[\/\-]/);
+      d=`${q[2]}-${String(q[1]).padStart(2,"0")}-${String(q[0]).padStart(2,"0")}`;}
+    else return;
+    if(!isFinite(a)) return;
+    l.drawdowns.push({id:uid(),date:d,amount:a,cutoff:monthEnd(d)}); n++;
+  });
+  l.drawdowns.sort((a,b)=>a.date<b.date?-1:1);
+  $("#pasteBox").value=""; $("#pasteModal").classList.remove("on");
+  renderAll(); toast(n?t("addedN",n):t("pasteFail"));
+});
+[["wLpr","lpr","%"],["wDep","dep","%"],["wReb","reb","%"],["wEarly","early","m"]].forEach(([id,key,u])=>{
+  const el=$("#"+id);
+  el.addEventListener("input",()=>{S.whatif[key]=parseFloat(el.value);
+    $("#"+id+"O").textContent = u==="%" ? (S.whatif[key]>=0?"+":"")+S.whatif[key].toFixed(2)+"%" : S.whatif[key]+(LANG==="zh"?" 個月":" mo");
+    renderWhatIf();});
+});
+$("#btnResetWhatIf").addEventListener("click",()=>{S.whatif={lpr:0,dep:0,reb:0,early:0};
+  [["wLpr","%"],["wDep","%"],["wReb","%"],["wEarly","m"]].forEach(([id,u])=>{$("#"+id).value=0;
+    $("#"+id+"O").textContent=u==="%"?"+0.00%":(LANG==="zh"?"0 個月":"0 mo");});
+  renderWhatIf();});
+
+function download(name,text,type="text/plain"){
+  const b=new Blob(["\ufeff"+text],{type});const u=URL.createObjectURL(b);
+  const a=document.createElement("a");a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500);}
+const csvE=v=>{const s=String(v??"");return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;};
+$("#btnSave").addEventListener("click",()=>{download(`loan-project-${S.reportDate}.json`,JSON.stringify({...S,whatif:undefined},null,2),"application/json");toast(t("saved"));});
+$("#btnLoad").addEventListener("click",()=>$("#fileIn").click());
+$("#fileIn").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.loans))throw 0;
+    S={...S,...d,whatif:{lpr:0,dep:0,reb:0,early:0}};S.selected=S.loans[0]?S.loans[0].id:null;
+    S.sheetLoan=S.selected;S.intLoan=S.selected;
+    $("#gReportDate").value=S.reportDate;$("#gCcy").value=S.ccy;renderAll();toast(t("opened"));
+  }catch(err){toast(t("badFile"));}};
+  r.readAsText(f);e.target.value="";});
+$("#btnCsvSheet").addEventListener("click",()=>{
+  const loan=S.loans.find(l=>l.id===S.sheetLoan); if(!loan) return;
+  const M=statementModel(loan);
+  const head=[t("cutoff"),t("ddDate"),t("ddAmount")];
+  M.settled.forEach(p=>head.push(fmtDate(p.date),t("dueDate"),t("days"),instalLabel(p.idx)));
+  M.future.forEach(p=>head.push(fmtDate(p.date)));
+  if(M.future.length) head.push(t("dueDate"),t("days"),t("subRemain"));
+  head.push(t("subTotal"));
+  const body=M.rows.map(x=>{
+    const c=[fmtDate(x.r.cutoff||monthEnd(x.r.date)),fmtDate(x.r.date),x.r.amount.toFixed(2)];
+    x.settled.forEach(i=>c.push(i.amount?i.amount.toFixed(2):"", i.dueDate?fmtDate(i.dueDate):"", i.rebateDays??"", i.rebate?i.rebate.toFixed(2):""));
+    x.future.forEach(i=>c.push(i.amount?i.amount.toFixed(2):""));
+    if(M.future.length) c.push(x.futureDue?fmtDate(x.futureDue):"", x.futureDays??"", x.futureRebate.toFixed(2));
+    c.push(x.totalRebate.toFixed(2)); return c.map(csvE).join(",");
+  }).join("\n");
+  download(`repayment-${loan.name}-${S.reportDate}.csv`, head.map(csvE).join(",")+"\n"+body, "text/csv");
+  toast(t("exported"));
+});
+$("#btnCsvInt").addEventListener("click",()=>{
+  const loan=S.loans.find(l=>l.id===S.intLoan); if(!loan) return;
+  const T=computeLoan(loan,null);
+  const head=[t("ddDate"),t("ddAmount"),t("repaidAmt"),t("curBal"),t("days"),t("rate"),t("intBefore"),
+    t("taxL"),t("intIncl"),t("depInc"),t("diff"),t("rebate")].map(csvE).join(",");
+  const body=T.liveRows.map(r=>[fmtDate(r.date),r.amount.toFixed(2),r.repaid.toFixed(2),r.outstanding.toFixed(2),
+    r.days,(r.rate*100).toFixed(4)+"%",r.interestNet.toFixed(2),r.tax.toFixed(2),r.interestGross.toFixed(2),
+    r.depIncome.toFixed(2),r.differential.toFixed(2),r.rebate.toFixed(2)].map(csvE).join(",")).join("\n");
+  download(`interest-${loan.name}-${S.reportDate}.csv`, head+"\n"+body, "text/csv");
+  toast(t("exported"));
+});
+
+/* ============================================================
+   14. BOOT
+   ============================================================ */
+(function init(){
+  try{const th=localStorage.getItem("loanCalc.theme"); if(th) document.documentElement.setAttribute("data-theme",th);
+      const lg=localStorage.getItem("loanCalc.lang"); if(lg==="zh"||lg==="en") LANG=lg;}catch(e){}
+  if(!restore()){ S.loans=sampleProject(); S.reportDate="2026-07-31"; }
+  S.selected=S.loans[0]?S.loans[0].id:null;
+  S.sheetLoan=S.sheetLoan||S.selected; S.intLoan=S.intLoan||S.selected;
+  $("#gReportDate").value=S.reportDate; $("#gCcy").value=S.ccy;
+  applyStaticI18n(); renderAll();
+})();
+</script>
+</body>
+</html>
